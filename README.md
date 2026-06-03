@@ -17,9 +17,4 @@ Technologies (Example)
   Frontend: HTML, CSS, JavaScript
   Backend: Python / PHP / Java
   Database: MySQL
-Advantages
-   Saves time and effort.
-   Improves accuracy.
-   Reduces paperwork.
-   Provides quick access to results.
-   Easy record maintenance.
+

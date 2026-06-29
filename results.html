@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Results - Exam Management</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a202c; }
+    nav {
+      background: #1e3a5f; padding: 0 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 60px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    nav .logo { color: #fff; font-size: 1.2rem; font-weight: 700; letter-spacing: 1px; }
+    nav ul { list-style: none; display: flex; gap: 0.5rem; }
+    nav ul li a {
+      color: #a0b4cc; text-decoration: none;
+      padding: 0.4rem 0.9rem; border-radius: 5px; font-size: 0.9rem;
+      transition: background 0.2s, color 0.2s;
+    }
+    nav ul li a:hover, nav ul li a.active { background: #2d6aad; color: #fff; }
+
+    main { max-width: 1100px; margin: 2rem auto; padding: 0 1.5rem; }
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .page-header h1 { font-size: 1.6rem; color: #1e3a5f; }
+    .page-header span { font-size: 0.9rem; color: #718096; }
+
+    /* STATS */
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-card { background: #fff; border-radius: 10px; padding: 1.2rem 1.5rem; box-shadow: 0 1px 6px rgba(0,0,0,0.08); border-left: 4px solid; }
+    .stat-card.blue  { border-color: #2d6aad; }
+    .stat-card.green { border-color: #38a169; }
+    .stat-card.red   { border-color: #e53e3e; }
+    .stat-card.gold  { border-color: #d69e2e; }
+    .stat-card .label { font-size: 0.8rem; color: #718096; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-card .value { font-size: 1.8rem; font-weight: 700; margin-top: 0.3rem; }
+
+    .btn { padding: 0.55rem 1.2rem; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: opacity 0.2s; }
+    .btn:hover { opacity: 0.85; }
+    .btn-primary { background: #2d6aad; color: #fff; }
+    .btn-danger  { background: #e53e3e; color: #fff; font-size: 0.8rem; padding: 0.35rem 0.8rem; }
+    .btn-secondary { background: #e2e8f0; color: #4a5568; }
+
+    .toolbar { display: flex; gap: 1rem; margin-bottom: 1.2rem; align-items: center; flex-wrap: wrap; }
+    .toolbar input, .toolbar select { padding: 0.55rem 1rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 0.9rem; background: #fff; }
+    .toolbar input { flex: 1; min-width: 180px; }
+    .toolbar input:focus, .toolbar select:focus { outline: none; border-color: #2d6aad; }
+
+    .card { background: #fff; border-radius: 10px; box-shadow: 0 1px 6px rgba(0,0,0,0.08); overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: #1e3a5f; color: #fff; }
+    thead th { padding: 0.85rem 1rem; text-align: left; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.5px; }
+    tbody tr { border-bottom: 1px solid #e2e8f0; transition: background 0.15s; }
+    tbody tr:hover { background: #ebf4ff; }
+    tbody td { padding: 0.8rem 1rem; font-size: 0.9rem; }
+
+    .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+    .badge-pass { background: #c6f6d5; color: #276749; }
+    .badge-fail { background: #fed7d7; color: #9b2c2c; }
+    .grade { font-weight: 700; font-size: 1rem; }
+    .grade-a { color: #276749; } .grade-b { color: #2c5282; }
+    .grade-c { color: #d69e2e; } .grade-f { color: #9b2c2c; }
+
+    .marks-bar-wrap { background: #e2e8f0; border-radius: 20px; height: 8px; width: 80px; display: inline-block; vertical-align: middle; margin-left: 6px; }
+    .marks-bar { height: 8px; border-radius: 20px; background: #2d6aad; }
+
+    .actions { display: flex; gap: 0.4rem; }
+    .empty-row td { text-align: center; padding: 2rem; color: #a0aec0; font-size: 0.9rem; }
+
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: #fff; border-radius: 12px; padding: 2rem; width: 100%; max-width: 480px; box-shadow: 0 8px 30px rgba(0,0,0,0.2); }
+    .modal h2 { font-size: 1.2rem; color: #1e3a5f; margin-bottom: 1.2rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: #4a5568; margin-bottom: 0.3rem; }
+    .form-group input, .form-group select { width: 100%; padding: 0.55rem 0.9rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 0.9rem; }
+    .form-group input:focus, .form-group select:focus { outline: none; border-color: #2d6aad; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 0.8rem; margin-top: 1.5rem; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">📚 ExamMS</div>
+  <ul>
+    <li><a href="../index.html">Dashboard</a></li>
+    <li><a href="students.html">Students</a></li>
+    <li><a href="exams.html">Exams</a></li>
+    <li><a href="results.html" class="active">Results</a></li>
+    <li><a href="schedule.html">Schedule</a></li>
+  </ul>
+</nav>
+
+<main>
+  <div class="page-header">
+    <div>
+      <h1>Results</h1>
+      <span id="resultCount">Loading...</span>
+    </div>
+    <button class="btn btn-primary" onclick="openModal('addModal')">+ Add Result</button>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card blue">
+      <div class="label">Total Results</div>
+      <div class="value" id="statTotal">0</div>
+    </div>
+    <div class="stat-card green">
+      <div class="label">Passed</div>
+      <div class="value" id="statPass">0</div>
+    </div>
+    <div class="stat-card red">
+      <div class="label">Failed</div>
+      <div class="value" id="statFail">0</div>
+    </div>
+    <div class="stat-card gold">
+      <div class="label">Avg. Marks</div>
+      <div class="value" id="statAvg">—</div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <input type="text" id="searchInput" placeholder="🔍  Search by roll number or subject..." oninput="filterResults()" />
+    <select id="filterResult" onchange="filterResults()">
+      <option value="">All Results</option>
+      <option value="Pass">Pass</option>
+      <option value="Fail">Fail</option>
+    </select>
+    <select id="filterGrade" onchange="filterResults()">
+      <option value="">All Grades</option>
+      <option value="A">Grade A (90+)</option>
+      <option value="B">Grade B (75–89)</option>
+      <option value="C">Grade C (50–74)</option>
+      <option value="F">Grade F (&lt;50)</option>
+    </select>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Roll No</th>
+          <th>Student Name</th>
+          <th>Subject</th>
+          <th>Marks (out of 100)</th>
+          <th>Grade</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="resultTable">
+        <tr class="empty-row"><td colspan="8">No results added yet.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<!-- Add Result Modal -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <h2>Add Exam Result</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Roll Number</label>
+        <input type="text" id="rollNo" placeholder="e.g. 2024CS001" />
+      </div>
+      <div class="form-group">
+        <label>Student Name</label>
+        <input type="text" id="studentName" placeholder="e.g. Ravi Kumar" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Subject</label>
+      <input type="text" id="subject" placeholder="e.g. Data Structures" />
+    </div>
+    <div class="form-group">
+      <label>Marks Obtained (out of 100)</label>
+      <input type="number" id="marks" min="0" max="100" placeholder="e.g. 78" oninput="autoGrade()" />
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Grade (auto-calculated)</label>
+        <input type="text" id="gradeDisplay" readonly placeholder="Auto" style="background:#f7fafc;" />
+      </div>
+      <div class="form-group">
+        <label>Status (auto-calculated)</label>
+        <input type="text" id="statusDisplay" readonly placeholder="Auto" style="background:#f7fafc;" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('addModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addResult()">Save Result</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/app.js"></script>
+<script>
+  let results = JSON.parse(localStorage.getItem('results') || '[]');
+  function saveResults() { localStorage.setItem('results', JSON.stringify(results)); }
+
+  function getGrade(m) {
+    if (m >= 90) return 'A';
+    if (m >= 75) return 'B';
+    if (m >= 50) return 'C';
+    return 'F';
+  }
+
+  function autoGrade() {
+    const m = parseInt(document.getElementById('marks').value);
+    if (!isNaN(m) && m >= 0 && m <= 100) {
+      document.getElementById('gradeDisplay').value = getGrade(m);
+      document.getElementById('statusDisplay').value = m >= 50 ? 'Pass' : 'Fail';
+    } else {
+      document.getElementById('gradeDisplay').value = '';
+      document.getElementById('statusDisplay').value = '';
+    }
+  }
+
+  function updateStats() {
+    const total = results.length;
+    const pass = results.filter(r => r.status === 'Pass').length;
+    const fail = total - pass;
+    const avg = total ? Math.round(results.reduce((s, r) => s + r.marks, 0) / total) : null;
+    document.getElementById('statTotal').textContent = total;
+    document.getElementById('statPass').textContent = pass;
+    document.getElementById('statFail').textContent = fail;
+    document.getElementById('statAvg').textContent = avg !== null ? avg : '—';
+  }
+
+  function renderTable(data) {
+    const tbody = document.getElementById('resultTable');
+    document.getElementById('resultCount').textContent = `${results.length} result${results.length !== 1 ? 's' : ''} recorded`;
+    updateStats();
+    if (data.length === 0) {
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="8">No results found.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.map((r, i) => {
+      const gc = r.grade === 'A' ? 'grade-a' : r.grade === 'B' ? 'grade-b' : r.grade === 'C' ? 'grade-c' : 'grade-f';
+      return `
+      <tr>
+        <td>${i + 1}</td>
+        <td><strong>${r.rollNo}</strong></td>
+        <td>${r.studentName}</td>
+        <td>${r.subject}</td>
+        <td>
+          ${r.marks}
+          <span class="marks-bar-wrap"><span class="marks-bar" style="width:${r.marks}%"></span></span>
+        </td>
+        <td><span class="grade ${gc}">${r.grade}</span></td>
+        <td><span class="badge ${r.status === 'Pass' ? 'badge-pass' : 'badge-fail'}">${r.status}</span></td>
+        <td class="actions">
+          <button class="btn btn-danger" onclick="deleteResult(${results.indexOf(r)})">Delete</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function filterResults() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const rs = document.getElementById('filterResult').value;
+    const gr = document.getElementById('filterGrade').value;
+    const filtered = results.filter(r =>
+      (r.rollNo.toLowerCase().includes(q) || r.subject.toLowerCase().includes(q) || r.studentName.toLowerCase().includes(q)) &&
+      (rs === '' || r.status === rs) &&
+      (gr === '' || r.grade === gr)
+    );
+    renderTable(filtered);
+  }
+
+  function addResult() {
+    const rollNo = document.getElementById('rollNo').value.trim();
+    const studentName = document.getElementById('studentName').value.trim();
+    const subject = document.getElementById('subject').value.trim();
+    const marks = parseInt(document.getElementById('marks').value);
+    if (!rollNo || !studentName || !subject || isNaN(marks)) { alert('Please fill in all fields.'); return; }
+    if (marks < 0 || marks > 100) { alert('Marks must be between 0 and 100.'); return; }
+    const grade = getGrade(marks);
+    const status = marks >= 50 ? 'Pass' : 'Fail';
+    results.push({ rollNo, studentName, subject, marks, grade, status });
+    saveResults();
+    renderTable(results);
+    closeModal('addModal');
+    ['rollNo','studentName','subject','marks','gradeDisplay','statusDisplay'].forEach(id => document.getElementById(id).value = '');
+  }
+
+  function deleteResult(i) {
+    if (confirm('Remove this result?')) { results.splice(i, 1); saveResults(); renderTable(results); }
+  }
+
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+  renderTable(results);
+</script>
+</body>
+</html>
